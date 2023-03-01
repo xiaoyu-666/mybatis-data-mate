@@ -1,0 +1,238 @@
+import java.time.LocalDateTime
+
+allprojects {
+    group = 'com.xxy'
+    version = '1.0-SNAPSHOT'
+}
+ext {
+    configuration = [javaVersion = JavaVersion.VERSION_1_8]
+
+
+    libraries = [mybatisVersion = '3.5.10',
+                 mybatisSpringVersion = '2.0.7',
+                 mybatisSpringBootStarterVersion = '2.2.2',
+                 springVersion = '5.3.15',
+                 springBootVersion = '2.5.3',
+                 springCloudVersion = '3.1.1',
+                 jsqlparserVersion = '4.4', // 4.5 有bug
+                 junitVersion = '5.9.0',]
+
+    lib = ["kotlin-reflect"             : "org.jetbrains.kotlin:kotlin-reflect:1.7.10",
+           "kotlin-stdlib-jdk8"         : "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10",
+           "jsqlparser"                 : "com.github.jsqlparser:jsqlparser:${jsqlparserVersion}",
+           "mybatis"                    : "org.mybatis:mybatis:${mybatisVersion}",
+           "mybatis-spring"             : "org.mybatis:mybatis-spring:${mybatisSpringVersion}",
+           "mybatis-thymeleaf"          : "org.mybatis.scripting:mybatis-thymeleaf:1.0.3",
+           "mybatis-freemarker"         : "org.mybatis.scripting:mybatis-freemarker:1.2.3",
+           "mybatis-velocity"           : "org.mybatis.scripting:mybatis-velocity:2.1.1",
+           "spring-context-support"     : "org.springframework:spring-context-support:${springVersion}",
+           "spring-jdbc"                : "org.springframework:spring-jdbc:${springVersion}",
+           "spring-tx"                  : "org.springframework:spring-tx:${springVersion}",
+           "spring-web"                 : "org.springframework:spring-web:${springVersion}",
+           "spring-aop"                 : "org.springframework:spring-aop:${springVersion}",
+           "aspectjrt"                  : "org.aspectj:aspectjrt:1.9.9.1",
+           "cglib"                      : "cglib:cglib:3.3.0",
+           "imadcn"                     : "com.imadcn.framework:idworker:1.5.0",
+           "spring-cloud-commons"       : "org.springframework.cloud:spring-cloud-commons:${springCloudVersion}",
+
+           "javax.servlet-api"          : "javax.servlet:javax.servlet-api:4.0.1",
+           "aspectjweaver"              : "org.aspectj:aspectjweaver:1.9.9.1",
+           "slf4j-api"                  : "org.slf4j:slf4j-api:1.7.36",
+           //copy
+           "mybatis-spring-boot-starter": "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisSpringBootStarterVersion}",
+           //test
+           "spring-test"                : "org.springframework:spring-test:${springVersion}",
+           "assertj-core"               : "org.assertj:assertj-core:3.23.1",
+           "junit-jupiter"              : "org.junit.jupiter:junit-jupiter:${junitVersion}",
+           "fastjson"                   : "com.alibaba:fastjson:2.0.11",
+           "jackson"                    : "com.fasterxml.jackson.core:jackson-databind:2.13.3",
+           "gson"                       : "com.google.code.gson:gson:2.9.1",
+           "lagarto"                    : "org.jodd:jodd-lagarto:6.0.6",
+           //datasource
+           "p6spy"                      : "p6spy:p6spy:3.9.1",
+           "sqlserver"                  : "com.microsoft.sqlserver:sqljdbc4:4.0",
+           "postgresql"                 : "org.postgresql:postgresql:42.4.1",
+//           "oracle"                     : fileTree(dir: 'libs', includes: ['ojdbc-11.2.0.3-jdk16.jar']),
+//           "dm"                         : fileTree(dir: 'libs', includes: ["jdbcDriver-18.jar"]),
+//           "kingbase"                   : fileTree(dir: 'libs', includes: ["kingbase8-8.2.0.jar"]),
+           "h2"                         : "com.h2database:h2:2.1.214",
+           "mysql"                      : "mysql:mysql-connector-java:8.0.30",
+           "sqlite"                     : "org.xerial:sqlite-jdbc:3.39.2.0",
+           "firebird"                   : "org.firebirdsql.jdbc:jaybird:4.0.6.java8",
+           //cache
+           "mybatis-ehcache"            : "org.mybatis.caches:mybatis-ehcache:1.2.1",
+           "mybatis-redis"              : "org.mybatis.caches:mybatis-redis:1.0.0-beta2",
+           "mybatis-caffeine"           : "org.mybatis.caches:mybatis-caffeine:1.0.0",
+           //code generator
+           "velocity"                   : "org.apache.velocity:velocity-engine-core:2.3",
+           "freemarker"                 : "org.freemarker:freemarker:2.3.31",
+           "beetl"                      : "com.ibeetl:beetl:3.7.0.RELEASE",
+           "swagger-annotations"        : "io.swagger:swagger-annotations:1.6.2",
+           "enjoy"                      : "com.jfinal:enjoy:5.0.0",]
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: "io.freefair.lombok"
+    apply plugin: 'com.github.hierynomus.license'
+//    apply plugin: 'signing'
+
+
+    sourceCompatibility = "${javaVersion}"
+    targetCompatibility = "${javaVersion}"
+
+    repositories {
+        mavenLocal()
+        maven { url "https://maven.aliyun.com/repository/public" }
+        mavenCentral()
+    }
+
+    dependencies {
+        testImplementation "${lib["assertj-core"]}"
+        testImplementation "${lib["junit-jupiter"]}"
+        testImplementation "org.mockito:mockito-junit-jupiter:4.6.1"
+        testImplementation "${lib["lagarto"]}"
+    }
+
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+        options.warnings = false
+        options.deprecation = true
+        options.compilerArgs += ["-parameters"]
+    }
+
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false
+    }
+
+
+    jar {
+        into("META-INF/") {
+            from rootProject.file("LICENSE")
+        }
+        into("META-INF/maven/$project.group/$project.name") {
+            from { generatePomFileForMavenJavaPublication }
+            rename ".*", "pom.xml"
+        }
+        afterEvaluate {
+            manifest {
+                attributes 'Implementation-Title': archiveBaseName
+                attributes 'Implementation-Version': archiveVersion
+                attributes 'Built-Gradle': gradle.gradleVersion
+//                attributes 'Bundle-DocURL': 'https://baomidou.com/'
+                attributes 'Build-OS': System.getProperty("os.name")
+                attributes 'Built-By': System.getProperty("user.name")
+                attributes 'Build-Jdk': System.getProperty("java.version")
+                attributes 'Build-Timestamp': LocalDateTime.now().format("yyyy-MM-dd HH:mm:ss")
+                attributes 'Automatic-Module-Name': "${project.group}.${project.name.replaceAll("-", ".")}"
+            }
+        }
+    }
+
+
+
+    license {
+        encoding = "UTF-8"
+        header = rootProject.file("license.txt")
+        includes(["**/*.java", "**/*.kt"])
+        mapping {
+            java = "SLASHSTAR_STYLE"
+            kt = "SLASHSTAR_STYLE"
+        }
+        ignoreFailures = true
+        ext.year = Calendar.getInstance().get(Calendar.YEAR)
+        ext.name = 'xxy'
+        ext.year = 'xxy@163.com'
+    }
+
+
+
+    task sourcesJar(type: Jar) {
+        archiveClassifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    javadoc {
+        afterEvaluate {
+            configure(options) {
+                encoding "UTF-8"
+                charSet 'UTF-8'
+                author true
+                version true
+                failOnError false
+                links "http://docs.oracle.com/javase/8/docs/api"
+            }
+        }
+    }
+
+//    test {
+//        dependsOn("cleanTest", "generatePomFileForMavenJavaPublication")
+//        useJUnitPlatform()
+//        // 解决 IdeaProxyLambdaMetaTest 和 LambdaUtilsTest 测试失败问题
+//        jvmArgs += ["--add-opens", "java.base/java.lang=ALL-UNNAMED",
+//                    "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED"]
+//        exclude("**/phoenix/**")
+//        exclude("**/postgresql/**")
+//        exclude("**/generator/**")
+//    }
+
+    task javadocJar(type: Jar) {
+        archiveClassifier = 'javadoc'
+        from javadoc
+    }
+
+//    tasks.whenTaskAdded { task ->
+//        if (task.name.contains('signMavenJavaPublication')) {
+//            task.enabled = new File(project.property('signing.secretKeyRingFile') as String).isFile()
+//        }
+//    }
+
+    publishing {
+
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
+
+
+                pom {
+                    name = 'mybatis-data-mate'
+                    packaging 'jar'
+                    description = 'Mybatis -plus extension package for data encryption, etc.'
+                    url = 'https://github.com/xiaoyu-666/mybatis-data-mate'
+
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:git://github.com/xiaoyu-666/mybatis-data-mate.git'
+                        developerConnection = 'scm:git:ssh://github.com:xiaoyu-666/mybatis-data-mate.git'
+                        url = 'https://github.com/xiaoyu-666/mybatis-data-mate.git'
+                    }
+
+                    developers {
+                        developer {
+                            id = 'xxy'
+                            name = 'x'
+                            email = 'xxy@163.com'
+                        }
+                    }
+
+
+                }
+
+
+            }
+        }
+    }
+
+
+
+}

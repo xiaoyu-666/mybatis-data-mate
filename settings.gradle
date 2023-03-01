@@ -1,0 +1,19 @@
+buildscript {
+    repositories {
+        maven { url "https://maven.aliyun.com/nexus/content/groups/public" }
+        maven { url "https://maven.aliyun.com/nexus/content/repositories/gradle-plugin" }
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    dependencies {
+        //noinspection DifferentKotlinGradleVersion
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
+        classpath "gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1" //许可证gradle插件 地址https://github.com/hierynomus/license-gradle-plugin
+        classpath "io.freefair.gradle:lombok-plugin:6.6" //lombok 插件
+    }
+}
+rootProject.name = 'mybatis-data-mate'
+include 'mybatis-data-annotation'
+include 'mybatis-data-core'
+
